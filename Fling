@@ -71,6 +71,7 @@ local ListedButtons = {
 	ToggleFlingButton,
 	AntiRagdollButton,
 	MiscButton,
+	PushAuraButton,
 }
 
 local Animate = function(Obj, Time, EasingDirection, EasingStyle, Properties, Play, Callback)
