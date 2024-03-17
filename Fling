@@ -101,9 +101,13 @@ end
 
 local function ReColorIcon(Icon, io : boolean)
 	if (io) then
+		local UIStroke = Icon.Parent.Parent:FindFirstChildOfClass("UIStroke")
 		Animate(Icon, 1, 'Out', 'Quad', {ImageColor3 = Color3.fromRGB(189, 255, 169)}, true) -- 255, 94, 94
+		Animate(UIStroke, 1, 'Out', 'Quad', {Color = Color3.fromRGB(189, 255, 169)}, true) -- 255, 94, 94
 	else
+		local UIStroke = Icon.Parent.Parent:FindFirstChildOfClass("UIStroke")
 		Animate(Icon, 1, 'Out', 'Quad', {ImageColor3 = Color3.fromRGB(255, 255, 255)}, true)
+		Animate(UIStroke, 1, 'Out', 'Quad', {Color = Color3.fromRGB(0, 0, 0)}, true) -- 255, 94, 94
 	end
 end
 
