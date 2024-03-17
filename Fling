@@ -230,7 +230,7 @@ local function TeleportTO(posX,posY,posZ,player,method)
 	end)
 end
 
-ToggleFlingButton.MouseButton1Click:Connect(function()
+ToggleFlingButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.ToggleFlingEnabled == false) then
 		ActiveButtons.ToggleFlingEnabled = true
 		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
@@ -248,7 +248,7 @@ ToggleFlingButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-ToggleVoidProtectionButton.MouseButton1Click:Connect(function()
+ToggleVoidProtectionButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.VoidProtection == false) then
 		ActiveButtons.VoidProtection = true
 		ReColorIcon(ToggleVoidProtectionIcon, ActiveButtons.VoidProtection)
@@ -258,7 +258,7 @@ ToggleVoidProtectionButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-AntiRagdollButton.MouseButton1Click:Connect(function()
+AntiRagdollButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.AntiRagdoll == false) then
 		ActiveButtons.AntiRagdoll = true
 		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
@@ -282,7 +282,7 @@ AntiRagdollButton.MouseButton1Click:Connect(function()
 	end
 end)
 
-PushAuraButton.MouseButton1Click:Connect(function()
+PushAuraButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.PushAura == false) then
 		ActiveButtons.PushAura = true
 		ReColorIcon(PushAuraIcon, ActiveButtons.PushAura)
