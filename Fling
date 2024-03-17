@@ -46,6 +46,10 @@ local Misc = List.Misc
 local MiscButton = Misc.Button
 local MiscIcon = MiscButton.Icon
 
+local PushAura = List.PushAura
+local PushAuraButton = PushAura.Button
+local PushAuraIcon = PushAuraButton.Icon
+
 local TweenService = game:GetService('TweenService')
 local RunService = game:GetService('RunService')
 local Player = game:GetService('Players').LocalPlayer
@@ -54,10 +58,12 @@ local ActiveButtons = {
 	ToggleFlingEnabled = false,
 	VoidProtection = false,
 	AntiRagdoll = false,
+	PushAura = false,
 }
 
 local Connections = {
 	AntiRagdoll = nil,
+	PushAura = nil,
 }
 
 local ListedButtons = {
@@ -109,6 +115,51 @@ end
 local function GetRoot(Player)
 	if GetCharacter(Player):FindFirstChild("HumanoidRootPart") then
 		return GetCharacter(Player).HumanoidRootPart
+	end
+end
+
+local function GetPush()
+	local TempPush = nil
+	pcall(function()
+		if Player.Backpack:FindFirstChild("Push") then
+			local PushTool = Player.Backpack.Push
+			PushTool.Parent = Player.Character
+			TempPush = PushTool
+		end
+		for i,v in pairs(game:GetService('Players'):GetPlayers()) do
+			if v.Character:FindFirstChild("Push") then
+				TempPush = v.Character.Push
+			end
+		end
+	end)
+	return TempPush
+end
+
+
+local function Push(Target)
+	local Push = GetPush()
+	local FixTool = nil
+	if Push ~= nil then
+		local args = {[1] = Target.Character}
+		GetPush().PushTool:FireServer(unpack(args))
+	end
+	if Player.Character:FindFirstChild("Push") then
+		Player.Character.Push.Parent = Player.Backpack
+	end
+	if Player.Character:FindFirstChild("ModdedPush") then
+		FixTool = Player.Character:FindFirstChild("ModdedPush")
+		FixTool.Parent = Player.Backpack
+		FixTool.Parent = Player.Character
+	end
+	if Player.Character:FindFirstChild("ClickTarget") then
+		FixTool = Player.Character:FindFirstChild("ClickTarget")
+		FixTool.Parent = Player.Backpack
+		FixTool.Parent = Player.Character
+	end
+	if Player.Character:FindFirstChild("potion") then
+		FixTool = Player.Character:FindFirstChild("potion")
+		FixTool.Parent = Player.Backpack
+		FixTool.Parent = Player.Character
 	end
 end
 
@@ -222,6 +273,33 @@ AntiRagdollButton.MouseButton1Click:Connect(function()
 			Connections.AntiRagdoll:Disconnect()
 			Connections.AntiRagdoll = nil
 			ToggleRagdoll(false)
+		end
+	end
+end)
+
+PushAuraButton.MouseButton1Click:Connect(function()
+	if (ActiveButtons.PushAura == false) then
+		ActiveButtons.PushAura = true
+		ReColorIcon(PushAuraIcon, ActiveButtons.PushAura)
+		if (not Connections.PushAura) then
+			Connections.PushAura = RunService.RenderStepped:Connect(function()
+				pcall(
+					function()
+						for __, Victim in pairs(game:GetService('Players'):GetPlayers()) do
+							if (Victim ~= Player) then
+								Push(Victim)
+							end
+						end
+					end
+				)
+			end)
+		end
+	else
+		ActiveButtons.PushAura = false
+		ReColorIcon(PushAuraIcon, ActiveButtons.PushAura)
+		if (Connections.PushAura) then
+			Connections.PushAura:Disconnect()
+			Connections.PushAura = nil
 		end
 	end
 end)
