@@ -1,0 +1,240 @@
+if (_G.ScriptLoaded) then
+	error('Cannot load script because It has loaded already.', 2)
+	return
+end
+
+local CoreGui = game:GetService('CoreGui')
+local Asset = {
+	['FlingX'] = "rbxassetid://16780043249",
+}
+
+local Parent = nil
+
+local Success, Return = pcall(function()
+	return game:GetObjects(Asset.FlingX)[1]
+end)
+
+if (Success) then
+	Parent = Return
+	if (Parent) then
+		Parent.Parent = CoreGui
+	end
+else
+	if (not Parent) then
+		return
+	end
+end
+
+_G.ScriptLoaded = true
+
+warn("Fling XUI Loaded!")
+
+local List = Parent.List
+local ToggleFling = List.ToggleFling
+local ToggleFlingButton = ToggleFling.Button
+local ToggleFlingIcon = ToggleFlingButton.Icon
+
+local ToggleVoidProtection = List.ToggleVoidProtection
+local ToggleVoidProtectionButton = ToggleVoidProtection.Button
+local ToggleVoidProtectionIcon = ToggleVoidProtectionButton.Icon
+
+local AntiRagdoll = List.AntiRagdoll
+local AntiRagdollButton = AntiRagdoll.Button
+local AntiRagdollIcon = AntiRagdollButton.Icon
+
+local Misc = List.Misc
+local MiscButton = Misc.Button
+local MiscIcon = MiscButton.Icon
+
+local TweenService = game:GetService('TweenService')
+local RunService = game:GetService('RunService')
+local Player = game:GetService('Players').LocalPlayer
+
+local ActiveButtons = {
+	ToggleFlingEnabled = false,
+	VoidProtection = false,
+	AntiRagdoll = false,
+}
+
+local Connections = {
+	AntiRagdoll = nil,
+}
+
+local ListedButtons = {
+	ToggleVoidProtectionButton,
+	ToggleFlingButton,
+	AntiRagdollButton,
+	MiscButton,
+}
+
+local Animate = function(Obj, Time, EasingDirection, EasingStyle, Properties, Play, Callback)
+	local CreateTween = TweenService:Create(
+		Obj,
+		TweenInfo.new(
+			Time,
+			Enum.EasingStyle[EasingStyle],
+			Enum.EasingDirection[EasingDirection],
+			0,
+			false,
+			0
+		),
+		Properties
+	)
+
+	if (typeof(Play) == "boolean" and Play == true) then
+		CreateTween:Play()
+	end
+
+	if (typeof(Callback) == "function") then
+		CreateTween.Completed:Connect(Callback)
+	end
+
+	return CreateTween
+end
+
+local function ReColorIcon(Icon, io : boolean)
+	if (io) then
+		Animate(Icon, 1, 'Out', 'Quad', {ImageColor3 = Color3.fromRGB(189, 255, 169)}, true) -- 255, 94, 94
+	else
+		Animate(Icon, 1, 'Out', 'Quad', {ImageColor3 = Color3.fromRGB(255, 255, 255)}, true)
+	end
+end
+
+local function GetCharacter(Player)
+	if Player.Character then
+		return Player.Character
+	end
+end
+
+local function GetRoot(Player)
+	if GetCharacter(Player):FindFirstChild("HumanoidRootPart") then
+		return GetCharacter(Player).HumanoidRootPart
+	end
+end
+
+local function ToggleRagdoll(bool)
+	pcall(function()
+		Player.Character["Falling down"].Disabled = bool
+		Player.Character["Swimming"].Disabled = bool
+		Player.Character["StartRagdoll"].Disabled = bool
+		Player.Character["Pushed"].Disabled = bool
+		Player.Character["RagdollMe"].Disabled = bool
+	end)
+end
+
+local function ToggleFling(io : boolean)
+	task.spawn(function()
+		if (io) then
+			local RVelocity = nil
+			repeat
+				pcall(function()
+					RVelocity = GetRoot(Player).Velocity 
+					GetRoot(Player).Velocity = Vector3.new(math.random(-150,150), -25000, math.random(-150,150))
+					RunService.RenderStepped:Wait()
+					GetRoot(Player).Velocity = RVelocity
+				end)
+				RunService.Heartbeat:Wait()
+			until ActiveButtons.ToggleFlingEnabled == false
+		else
+			ReColorIcon(ToggleFlingIcon, io)
+		end
+	end)
+end
+
+local function ToggleVoidProtection(bool)
+	if bool then
+		game.Workspace.FallenPartsDestroyHeight = 0/0
+	else
+		game.Workspace.FallenPartsDestroyHeight = -500
+	end
+end
+
+local function TeleportTO(posX,posY,posZ,player,method)
+	pcall(function()
+		if method == "safe" then
+			task.spawn(function()
+				for i = 1,30 do
+					task.wait()
+					GetRoot(Player).Velocity = Vector3.new(0,0,0)
+					if player == "pos" then
+						GetRoot(Player).CFrame = CFrame.new(posX,posY,posZ)
+					else
+						GetRoot(Player).CFrame = CFrame.new(GetRoot(player).Position)+Vector3.new(0,2,0)
+					end
+				end
+			end)
+		else
+			GetRoot(Player).Velocity = Vector3.new(0,0,0)
+			if player == "pos" then
+				GetRoot(Player).CFrame = CFrame.new(posX,posY,posZ)
+			else
+				GetRoot(Player).CFrame = CFrame.new(GetRoot(player).Position)+Vector3.new(0,2,0)
+			end
+		end
+	end)
+end
+
+ToggleFlingButton.MouseButton1Click:Connect(function()
+	if (ActiveButtons.ToggleFlingEnabled == false) then
+		ActiveButtons.ToggleFlingEnabled = true
+		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
+		local fixpos = GetRoot(Player).Position
+		ToggleVoidProtection(ActiveButtons.ToggleFlingEnabled)
+		ToggleFling(ActiveButtons.ToggleFlingEnabled)
+		TeleportTO(fixpos.X,fixpos.Y,fixpos.Z,"pos","safe")
+		ToggleVoidProtection(false)
+		if (ActiveButtons.VoidProtection) then
+			ToggleVoidProtection(ActiveButtons.VoidProtection)
+		end
+	else
+		ActiveButtons.ToggleFlingEnabled = false
+		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
+	end
+end)
+
+ToggleVoidProtectionButton.MouseButton1Click:Connect(function()
+	if (ActiveButtons.VoidProtection == false) then
+		ActiveButtons.VoidProtection = true
+		ReColorIcon(ToggleVoidProtectionIcon, ActiveButtons.VoidProtection)
+	else
+		ActiveButtons.VoidProtection = false
+		ReColorIcon(ToggleVoidProtectionIcon, ActiveButtons.VoidProtection)
+	end
+end)
+
+AntiRagdollButton.MouseButton1Click:Connect(function()
+	if (ActiveButtons.AntiRagdoll == false) then
+		ActiveButtons.AntiRagdoll = true
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		if (not Connections.AntiRagdoll) then
+			Connections.AntiRagdoll = GetRoot(Player).ChildAdded:Connect(function(Force)
+				if Force.Name == "PushForce" then
+					Force.MaxForce = Vector3.new(0,0,0)
+					Force.Velocity = Vector3.new(0,0,0)
+				end
+			end)
+			ToggleRagdoll(true)
+		end
+	else
+		ActiveButtons.AntiRagdoll = false
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		if (Connections.AntiRagdoll) then
+			Connections.AntiRagdoll:Disconnect()
+			Connections.AntiRagdoll = nil
+			ToggleRagdoll(false)
+		end
+	end
+end)
+
+for i, Buttons in pairs(ListedButtons) do
+	local ButtonsParent = Buttons.Parent
+	local BottomLabel = ButtonsParent.BottomLabel
+	Buttons.MouseEnter:Connect(function()
+		Animate(BottomLabel, 0.6, 'Out', 'Circular', {TextTransparency = 0}, true)
+	end)
+	Buttons.MouseLeave:Connect(function()
+		Animate(BottomLabel, 0.6, 'Out', 'Circular', {TextTransparency = 1}, true)
+	end)
+end
+
+warn("[Functioning] Loaded All Buttons;")
