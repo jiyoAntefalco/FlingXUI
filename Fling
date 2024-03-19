@@ -35,7 +35,7 @@ local AnimatedIcon = Loader.AnimatedIcon
 local LoaderUIScale = Loader.UIScale
 local AssetsLoader = Loader.AssetsLoader
 
-local SpritesheetModule = loadstring(game:HttpGet("https://github.com/jiyoAntefalco/FlingXUI/blob/main/SpritesheetModule"))()
+local SpritesheetModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/jiyoAntefalco/FlingXUI/main/SpritesheetModule"))()
 local SpritesheetClip = SpritesheetModule.new(AnimatedIcon)
 
 SpritesheetClip:SetAnimation("Liquid-Circle")
