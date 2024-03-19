@@ -8,7 +8,7 @@ local Asset = {
 	['FlingX'] = "rbxassetid://16780043249",
 }
 
-local Parent = nil
+local Parent = script.Parent
 
 local Success, Return = pcall(function()
 	return game:GetObjects(Asset.FlingX)[1]
@@ -26,8 +26,20 @@ else
 end
 
 _G.ScriptLoaded = true
+_G.WaitTime = 4
 
 warn("Fling XUI Loaded!")
+
+local Loader = Parent.Loader
+local AnimatedIcon = Loader.AnimatedIcon
+local LoaderUIScale = Loader.UIScale
+local AssetsLoader = Loader.AssetsLoader
+
+local SpritesheetModule = loadstring(game:HttpGet("https://github.com/jiyoAntefalco/FlingXUI/blob/main/SpritesheetModule"))()
+local SpritesheetClip = SpritesheetModule.new(AnimatedIcon)
+
+SpritesheetClip:SetAnimation("Liquid-Circle")
+SpritesheetClip.Looped = true
 
 local List = Parent.List
 local ToggleFling = List.ToggleFling
@@ -52,6 +64,8 @@ local PushAuraIcon = PushAuraButton.Icon
 
 local TweenService = game:GetService('TweenService')
 local RunService = game:GetService('RunService')
+local ContentProvider = game:GetService('ContentProvider')
+local Lighting = game:GetService('Lighting')
 local Player = game:GetService('Players').LocalPlayer
 
 local ActiveButtons = {
@@ -72,6 +86,13 @@ local ListedButtons = {
 	AntiRagdollButton,
 	MiscButton,
 	PushAuraButton,
+}
+
+local Colors = {
+	LessWhite = Color3.fromRGB(161, 161, 161),
+	White = Color3.fromRGB(255, 255, 255),
+	Dark = Color3.fromRGB(20, 20, 20),
+	LessDark = Color3.fromRGB(40, 40, 40)
 }
 
 local Animate = function(Obj, Time, EasingDirection, EasingStyle, Properties, Play, Callback)
@@ -98,6 +119,105 @@ local Animate = function(Obj, Time, EasingDirection, EasingStyle, Properties, Pl
 
 	return CreateTween
 end
+
+local function FindObject(From, Name)
+	if (From:FindFirstChild(Name)) then
+		return From:FindFirstChild(Name)
+	else
+		return nil
+	end
+end
+
+local function SetLighting(Bool)
+	
+	if (Bool == true) then
+		if (FindObject(Lighting, 'BlurEffect_1')) then
+			local Blur = FindObject(Lighting, 'BlurEffect_1')
+			Animate(Blur, 1, 'Out', 'Quad', {Size = 24}, true)
+		end
+		if (FindObject(Lighting, 'ColorCorrection_1')) then
+			local ColorCorrection = FindObject(Lighting, 'ColorCorrection_1')
+			Animate(ColorCorrection, 1, 'Out', 'Sine', {TintColor = Colors.LessDark}, true)
+		end
+	else
+		if (FindObject(Lighting, 'BlurEffect_1')) then
+			local Blur = FindObject(Lighting, 'BlurEffect_1')
+			Animate(Blur, 1, 'Out', 'Quad', {Size = 0}, true)
+		end
+		if (FindObject(Lighting, 'ColorCorrection_1')) then
+			local ColorCorrection = FindObject(Lighting, 'ColorCorrection_1')
+			Animate(ColorCorrection, 1, 'Out', 'Sine', {TintColor = Colors.White}, true)
+		end
+	end
+end
+
+local function SetCameraFOV(Bool)
+	if (Bool == true) then
+		if (FindObject(workspace, 'Camera')) then
+			local CurrentCamera = FindObject(workspace, 'Camera')
+			Animate(CurrentCamera, 0.42, 'Out', 'Circular', {FieldOfView = 30}, true)
+		end
+	else
+		if (FindObject(workspace, 'Camera')) then
+			local CurrentCamera = FindObject(workspace, 'Camera')
+			Animate(CurrentCamera, 0.6, 'Out', 'Circular', {FieldOfView = 70}, true)
+		end
+	end
+end
+
+local function SetAll(Bool)
+	SetLighting(Bool)
+	SetCameraFOV(Bool)
+end
+
+local BlurEffect_1 = Instance.new("BlurEffect")
+BlurEffect_1.Name = 'BlurEffect_1'
+BlurEffect_1.Size = 0
+BlurEffect_1.Parent = Lighting
+BlurEffect_1.Enabled = true
+
+local ColorCorrection_1 = Instance.new("ColorCorrectionEffect")
+ColorCorrection_1.Name = 'ColorCorrection_1'
+ColorCorrection_1.TintColor = Colors.White
+ColorCorrection_1.Parent = Lighting
+ColorCorrection_1.Enabled = true
+
+local Contents = {
+	AnimatedIcon.Image,
+}
+local Descendants = Parent:GetDescendants()
+
+ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
+	if (AssetFetchStatus == Contents[1]) then
+		SetAll(true)
+		
+		Animate(LoaderUIScale, 0.8, 'Out', 'Circular', {Scale = 1}, true).Completed:Wait()
+		Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 0}, true)
+		
+		SpritesheetClip:Play()
+		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 0}, true)
+		
+		for i = 1, #Descendants do
+			local Instances = Descendants[i]
+			local StringText = "XUI Assets Loaded\n<b>"..i.." • "..#Descendants.."</b>"
+			ContentProvider:PreloadAsync( {Instances} )
+			
+			AssetsLoader.Text = StringText
+			task.wait(0.1)
+		end
+		
+		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 1}, true)
+
+		Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 1}, true).Completed:Wait()
+		Animate(LoaderUIScale, 0.8, 'InOut', 'Circular', {Scale = 0}, true).Completed:Wait()
+		Loader.Visible = false
+		
+		Animate(List, 0.7, 'Out', 'Cubic', {Position = UDim2.new(0.5, 0,0, 0)}, true)
+		SetAll(false)
+	end
+end)
+
+warn("Running!")
 
 local function ReColorIcon(Icon, io : boolean)
 	if (io) then
@@ -230,7 +350,7 @@ local function TeleportTO(posX,posY,posZ,player,method)
 	end)
 end
 
-ToggleFlingButton.MouseButton1Down:Connect(function()
+ToggleFlingButton.MouseButton1Click:Connect(function()
 	if (ActiveButtons.ToggleFlingEnabled == false) then
 		ActiveButtons.ToggleFlingEnabled = true
 		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
@@ -248,7 +368,7 @@ ToggleFlingButton.MouseButton1Down:Connect(function()
 	end
 end)
 
-ToggleVoidProtectionButton.MouseButton1Down:Connect(function()
+ToggleVoidProtectionButton.MouseButton1Click:Connect(function()
 	if (ActiveButtons.VoidProtection == false) then
 		ActiveButtons.VoidProtection = true
 		ReColorIcon(ToggleVoidProtectionIcon, ActiveButtons.VoidProtection)
@@ -258,7 +378,7 @@ ToggleVoidProtectionButton.MouseButton1Down:Connect(function()
 	end
 end)
 
-AntiRagdollButton.MouseButton1Down:Connect(function()
+AntiRagdollButton.MouseButton1Click:Connect(function()
 	if (ActiveButtons.AntiRagdoll == false) then
 		ActiveButtons.AntiRagdoll = true
 		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
@@ -282,7 +402,7 @@ AntiRagdollButton.MouseButton1Down:Connect(function()
 	end
 end)
 
-PushAuraButton.MouseButton1Down:Connect(function()
+PushAuraButton.MouseButton1Click:Connect(function()
 	if (ActiveButtons.PushAura == false) then
 		ActiveButtons.PushAura = true
 		ReColorIcon(PushAuraIcon, ActiveButtons.PushAura)
