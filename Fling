@@ -8,7 +8,7 @@ local Asset = {
 	['FlingX'] = "rbxassetid://16780043249",
 }
 
-local Parent = script.Parent
+local Parent = nil
 
 local Success, Return = pcall(function()
 	return game:GetObjects(Asset.FlingX)[1]
