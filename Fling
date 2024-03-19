@@ -54,6 +54,10 @@ local AntiRagdoll = List.AntiRagdoll
 local AntiRagdollButton = AntiRagdoll.Button
 local AntiRagdollIcon = AntiRagdollButton.Icon
 
+local AntiFling = List.AntiFling
+local AntiFlingButton = AntiFling.Button
+local AntiFlingIcon = AntiFlingButton.Icon
+
 local Misc = List.Misc
 local MiscButton = Misc.Button
 local MiscIcon = MiscButton.Icon
@@ -73,11 +77,13 @@ local ActiveButtons = {
 	VoidProtection = false,
 	AntiRagdoll = false,
 	PushAura = false,
+	AntiFling = false,
 }
 
 local Connections = {
 	AntiRagdoll = nil,
 	PushAura = nil,
+	AntiFling = nil,
 }
 
 local ListedButtons = {
@@ -86,6 +92,7 @@ local ListedButtons = {
 	AntiRagdollButton,
 	MiscButton,
 	PushAuraButton,
+	AntiFlingButton,
 }
 
 local Colors = {
@@ -203,7 +210,7 @@ ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
 			ContentProvider:PreloadAsync( {Instances} )
 			
 			AssetsLoader.Text = StringText
-			task.wait(0.055)
+			task.wait(0.1)
 		end
 		
 		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 1}, true)
@@ -398,6 +405,46 @@ AntiRagdollButton.MouseButton1Down:Connect(function()
 			Connections.AntiRagdoll:Disconnect()
 			Connections.AntiRagdoll = nil
 			ToggleRagdoll(false)
+		end
+	end
+end)
+
+AntiFlingButton.MouseButton1Click:Connect(function()
+	if (ActiveButtons.AntiFling == false) then
+		ActiveButtons.AntiFling = true
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		if (not Connections.AntiFling) then
+			Connections.AntiFling = RunService.Stepped:Connect(function()
+				for _, Player in pairs(game.Players:GetPlayers()) do
+					if Player ~= Player and Player.Character then
+						local Character = Player.Character
+						local Parts = Character:GetDescendants()
+
+						for _, Part in ipairs(Parts) do
+							if Part:IsA("BasePart") then
+								Part.CanCollide = false
+								Part.Velocity = Vector3.new(0, 0, 0)
+								Part.RotVelocity = Vector3.new(0, 0, 0)
+								Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+								Part.Massless = true
+							elseif Part:IsA("Accessory") and Part.Handle:IsA("BasePart") then
+								Part.Handle.CanCollide = false
+								Part.Handle.Velocity = Vector3.new(0, 0, 0)
+								Part.Handle.RotVelocity = Vector3.new(0, 0, 0)
+								Part.Handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+								Part.Handle.Massless = true
+							end
+						end
+					end
+				end
+			end)
+		end
+	else
+		ActiveButtons.AntiFling = false
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		if (Connections.AntiFling) then
+			Connections.AntiFling:Disconnect()
+			Connections.AntiFling = nil
 		end
 	end
 end)
