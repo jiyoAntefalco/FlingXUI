@@ -1,0 +1,119 @@
+local module = {}
+local io = {}
+local Frame = 0
+
+io.FrameRate = 60
+io.SpriteCount = 0
+io.RowCount = Vector2.new(0,0)
+io.Looped = false
+
+module.SpriteLabel = nil
+module.State = false
+module.Stop = false
+
+module.MaxFrameRate = 60
+module.FrameTime = module.MaxFrameRate / io.FrameRate
+
+local Icons = {	
+	['Liquid-Circle'] = {
+		Icon = "rbxassetid://16799068553",
+		Rows = Vector2.new(7, 7),
+		Count = 45,
+		RectSize = Vector2.new(146.286, 146.286),
+		RectOffset = Vector2.new(438.857, 585.143)
+	}
+}
+
+function io:Find(IconName)
+	if (Icons[IconName] ~= nil) then
+		return true
+	end
+	return false
+end
+
+function io:SetAnimation(IconName)
+	if (Icons[IconName] ~= nil) then
+		local IconDetail = Icons[IconName]
+		io.SpriteCount = IconDetail.Count
+		io.RowCount = IconDetail.Rows
+
+		local SL = module.SpriteLabel
+
+		SL.Image = IconDetail.Icon
+		SL.ImageRectOffset = IconDetail.RectOffset
+		SL.ImageRectSize = IconDetail.RectSize
+	end
+end
+
+function module:AdvanceTo(Image, Add, RowCount)
+	Frame = Frame + Add or 1
+
+	if (Frame > io.SpriteCount - 1) then
+		if (io.Looped) then
+			Frame = 0
+		else
+			module.State = false
+		end
+	end
+
+	Frame = math.clamp(Frame, 1, io.SpriteCount)
+
+	local Image = module.SpriteLabel
+
+	local totalFrames = RowCount.X * RowCount.Y
+	local offsetSize = Image.ImageRectSize
+	local currentFrame = Frame
+	local row = math.ceil((currentFrame / totalFrames) * RowCount.Y)
+	local column = (currentFrame - (RowCount.X * (row - 1))) 
+
+	local xPos = (offsetSize.X * (-1 + column))
+	local yPos = (offsetSize.Y * (-1 + row))
+	Image.ImageRectOffset = Vector2.new(xPos,yPos)
+end
+
+function io:Play()
+	if (not module.State) then
+		module.State = true
+	end
+	if (module.Stop) then
+		module.Stop = false
+	end
+
+	local co = coroutine.create(function()
+		local FPS = module.FrameTime / io.FrameRate
+		while wait(FPS) do
+			if (module.State) then
+				if (Frame % module.FrameTime == 0) then
+					module:AdvanceTo(module.SpriteLabel, 1, io.RowCount)
+				end
+			end
+			if (module.Stop) then
+				break
+			end
+		end
+	end)
+	coroutine.resume(co)
+end
+
+function io:Stop()
+	if (module.State) then
+		module.State = false
+	end
+	if (not module.Stop) then
+		module.Stop = true
+	end
+	Frame = 0
+end
+
+function io:Pause()
+	if (module.State) then
+		module.State = false
+	end
+end
+
+function module.new(Image)
+	module.SpriteLabel = Image
+	return io
+end
+
+return module
