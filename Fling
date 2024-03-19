@@ -203,7 +203,7 @@ ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
 			ContentProvider:PreloadAsync( {Instances} )
 			
 			AssetsLoader.Text = StringText
-			task.wait(0.1)
+			task.wait(0.055)
 		end
 		
 		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 1}, true)
