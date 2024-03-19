@@ -412,7 +412,7 @@ end)
 AntiFlingButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.AntiFling == false) then
 		ActiveButtons.AntiFling = true
-		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiFling)
+		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
 		if (not Connections.AntiFling) then
 			Connections.AntiFling = RunService.Stepped:Connect(function()
 				for _, Player in pairs(game.Players:GetPlayers()) do
@@ -441,7 +441,7 @@ AntiFlingButton.MouseButton1Down:Connect(function()
 		end
 	else
 		ActiveButtons.AntiFling = false
-		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiFling)
+		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
 		if (Connections.AntiFling) then
 			Connections.AntiFling:Disconnect()
 			Connections.AntiFling = nil
