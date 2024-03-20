@@ -129,6 +129,7 @@ local Connections = {
 	AntiRagdoll = nil,
 	PushAura = nil,
 	AntiFling = nil,
+	ToggleFling = nil,
 }
 
 local ListedButtons = {
@@ -375,22 +376,22 @@ local function ToggleRagdoll(bool)
 end
 
 local function ToggleFling(io : boolean)
-	task.spawn(function()
-		if (io) then
-			local RVelocity = nil
-			repeat
-				pcall(function()
-					RVelocity = GetRoot(Player).Velocity 
-					GetRoot(Player).Velocity = Vector3.new(math.random(-150,150), -25000, math.random(-150,150))
-					RunService.RenderStepped:Wait()
-					GetRoot(Player).Velocity = RVelocity
-				end)
-				RunService.Heartbeat:Wait()
-			until ActiveButtons.ToggleFlingEnabled == false
-		else
-			ReColorIcon(ToggleFlingIcon, io)
+	if (io) then
+		local RVelocity = nil
+		if (not Connections.ToggleFling) then
+			Connections.ToggleFling = RunService.Heartbeat:Connect(function()
+				RVelocity = GetRoot(Player).Velocity 
+				GetRoot(Player).Velocity = Vector3.new(math.random(-150,150), -25000, math.random(-150,150))
+				RunService.RenderStepped:Wait()
+				GetRoot(Player).Velocity = RVelocity
+			end)
 		end
-	end)
+	else
+		if (Connections.ToggleFling) then
+			Connections.ToggleFling:Disconnect()
+			Connections.ToggleFling = nil
+		end
+	end
 end
 
 local function ToggleVoidProtection(bool)
@@ -441,9 +442,9 @@ ToggleFlingButton.MouseButton1Down:Connect(function()
 	else
 		ActiveButtons.ToggleFlingEnabled = false
 		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
-		pcall(function()
-			GetRoot(Player).Velocity = Vector3.new(0,0,0)
-		end)
+		local fixpos = GetRoot(Player).Position
+		TeleportTO(fixpos.X,fixpos.Y,fixpos.Z,"pos","safe")
+		ToggleFling(ActiveButtons.ToggleFlingEnabled)
 	end
 end)
 
