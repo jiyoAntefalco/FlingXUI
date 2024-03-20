@@ -424,7 +424,7 @@ AntiRagdollButton.MouseButton1Down:Connect(function()
 	end
 end)
 
-AntiFlingButton.MouseButton1Click:Connect(function()
+AntiFlingButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.AntiFling == false) then
 		ActiveButtons.AntiFling = true
 		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
