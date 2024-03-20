@@ -441,6 +441,9 @@ ToggleFlingButton.MouseButton1Down:Connect(function()
 	else
 		ActiveButtons.ToggleFlingEnabled = false
 		ReColorIcon(ToggleFlingIcon, ActiveButtons.ToggleFlingEnabled)
+		pcall(function()
+			GetRoot(Player).Velocity = Vector3.new(0,0,0)
+		end)
 	end
 end)
 
