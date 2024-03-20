@@ -234,6 +234,7 @@ ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
 		for i, Frame in pairs(FramesInOrder) do
 			local FrameUIScale = Frame.UIScale
 			Animate(FrameUIScale, 0.75, 'InOut', 'Circular', {Scale = 1}, true)
+			task.wait(0.5)
 		end
 	end
 end)
