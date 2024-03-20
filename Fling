@@ -72,6 +72,42 @@ local ContentProvider = game:GetService('ContentProvider')
 local Lighting = game:GetService('Lighting')
 local Player = game:GetService('Players').LocalPlayer
 
+local SoundEffects = {}
+
+function SoundEffects:InsertSound(Parent, Properties)
+	local SFX = {
+		['Start'] = "rbxassetid://8503531171",
+		['Click_On'] = "rbxassetid://489105792",
+		['Click_Off'] = "rbxassetid://489109520",
+		['Minimize'] = "rbxassetid://11577879177",
+		['Maximize'] = "rbxassetid://11577880887",
+		['SciFi_Click'] = "rbxassetid://11577976565",
+		['Start2'] = "rbxassetid://16807606906",
+		['Bloop2'] = "rbxassetid://16807601733",
+		['Bloop3'] = "rbxassetid://16807597064",
+		['Bloop4'] = "rbxassetid://16807592236"
+	}
+
+	local SoundEffect = Instance.new('Sound', Parent)
+	SoundEffect.Volume = Properties.Volume or 0.8
+	SoundEffect.Pitch = Properties.Pitch or SoundEffect.Pitch
+	SoundEffect.Looped = Properties.Looped or SoundEffect.Looped
+	SoundEffect.Name = Properties.Name or "SoundEffect"
+	SoundEffect.TimePosition = Properties.TimePosition or 0
+
+	SoundEffect.Ended:Connect(function()
+		game.Debris:AddItem(SoundEffect, 0)
+	end)
+
+	if (typeof(Properties.Sound) == 'string') then
+		SoundEffect.SoundId = SFX[Properties.Sound]
+	elseif (typeof(Properties.Sound) == 'number') then
+		SoundEffect.SoundId = "rbxassetid://".. Properties.Sound
+	end
+	
+	SoundEffect:Play()
+end
+
 local FramesInOrder = {
 	Misc,
 	ToggleFling,
@@ -198,44 +234,62 @@ ColorCorrection_1.TintColor = Colors.White
 ColorCorrection_1.Parent = Lighting
 ColorCorrection_1.Enabled = true
 
+
 local Contents = {
 	AnimatedIcon.Image,
 }
-local Descendants = Parent:GetDescendants()
+
+local function StartIntro()
+	local Descendants = Parent:GetDescendants()
+	
+	SetAll(true)
+
+	SoundEffects:InsertSound(Loader, 
+		{
+			Sound = "Start2",
+			Volume = 2
+		}
+	)
+	Animate(LoaderUIScale, 0.8, 'Out', 'Circular', {Scale = 1}, true).Completed:Wait()
+	Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 0}, true)
+
+	SpritesheetClip:Play()
+	Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 0}, true)
+
+	for i = 1, #Descendants do
+		local Instances = Descendants[i]
+		local StringText = "XUI Assets Loaded\n<b>"..i.." • "..#Descendants.."</b>"
+		ContentProvider:PreloadAsync( {Instances} )
+
+		AssetsLoader.Text = StringText
+		task.wait(0.1)
+	end
+
+	Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 1}, true)
+
+	Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 1}, true).Completed:Wait()
+	Animate(LoaderUIScale, 0.8, 'InOut', 'Circular', {Scale = 0}, true).Completed:Wait()
+	Loader.Visible = false
+
+	Animate(List, 0.7, 'Out', 'Cubic', {Position = UDim2.new(0.5, 0,0, 0)}, true)
+	SetAll(false)
+
+	for i, Frame in pairs(FramesInOrder) do
+		local FrameUIScale = Frame.UIScale
+		Animate(FrameUIScale, 0.75, 'InOut', 'Circular', {Scale = 1}, true)
+		SoundEffects:InsertSound(Loader, 
+			{
+				Sound = "Bloop2",
+				Volume = 1.5
+			}
+		)
+		task.wait(0.4)
+	end
+end
 
 ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
 	if (AssetFetchStatus == Contents[1]) then
-		SetAll(true)
-		
-		Animate(LoaderUIScale, 0.8, 'Out', 'Circular', {Scale = 1}, true).Completed:Wait()
-		Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 0}, true)
-		
-		SpritesheetClip:Play()
-		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 0}, true)
-		
-		for i = 1, #Descendants do
-			local Instances = Descendants[i]
-			local StringText = "XUI Assets Loaded\n<b>"..i.." • "..#Descendants.."</b>"
-			ContentProvider:PreloadAsync( {Instances} )
-			
-			AssetsLoader.Text = StringText
-			task.wait(0.1)
-		end
-		
-		Animate(AssetsLoader, 0.8, 'Out', 'Circular', {TextTransparency = 1}, true)
-
-		Animate(AnimatedIcon, 0.8, 'Out', 'Quad', {ImageTransparency = 1}, true).Completed:Wait()
-		Animate(LoaderUIScale, 0.8, 'InOut', 'Circular', {Scale = 0}, true).Completed:Wait()
-		Loader.Visible = false
-		
-		Animate(List, 0.7, 'Out', 'Cubic', {Position = UDim2.new(0.5, 0,0, 0)}, true)
-		SetAll(false)
-
-		for i, Frame in pairs(FramesInOrder) do
-			local FrameUIScale = Frame.UIScale
-			Animate(FrameUIScale, 0.75, 'InOut', 'Circular', {Scale = 1}, true)
-			task.wait(0.5)
-		end
+		StartIntro()
 	end
 end)
 
@@ -441,12 +495,12 @@ AntiFlingButton.MouseButton1Down:Connect(function()
 										v.RotVelocity = Vector3.new(0,0,0)
 										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
 										v.Massless = true
-									--[[elseif v:IsA("Accessory") then
+									elseif v:IsA("Accessory") then
 										v.Handle.CanCollide = false
 										v.Handle.Velocity = Vector3.new(0,0,0)
 										v.RotVelocity = Vector3.new(0,0,0)
 										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
-										v.Massless = true]]
+										v.Massless = true
 									end
 								end
 							end
