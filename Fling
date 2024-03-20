@@ -427,7 +427,7 @@ end)
 AntiFlingButton.MouseButton1Down:Connect(function()
 	if (ActiveButtons.AntiFling == false) then
 		ActiveButtons.AntiFling = true
-		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
 		if (not Connections.AntiFling) then
 			Connections.AntiFling = RunService.Stepped:Connect(function()
 				pcall(function()
@@ -441,12 +441,12 @@ AntiFlingButton.MouseButton1Down:Connect(function()
 										v.RotVelocity = Vector3.new(0,0,0)
 										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
 										v.Massless = true
-									elseif v:IsA("Accessory") then
+									--[[elseif v:IsA("Accessory") then
 										v.Handle.CanCollide = false
 										v.Handle.Velocity = Vector3.new(0,0,0)
 										v.RotVelocity = Vector3.new(0,0,0)
 										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
-										v.Massless = true
+										v.Massless = true]]
 									end
 								end
 							end
@@ -457,7 +457,7 @@ AntiFlingButton.MouseButton1Down:Connect(function()
 		end
 	else
 		ActiveButtons.AntiFling = false
-		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
+		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
 		if (Connections.AntiFling) then
 			Connections.AntiFling:Disconnect()
 			Connections.AntiFling = nil
