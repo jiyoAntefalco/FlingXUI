@@ -72,6 +72,15 @@ local ContentProvider = game:GetService('ContentProvider')
 local Lighting = game:GetService('Lighting')
 local Player = game:GetService('Players').LocalPlayer
 
+local FramesInOrder = {
+	Misc,
+	ToggleFling,
+	AntiRagdoll,
+	ToggleVoidProtection,
+	PushAura,
+	AntiFling
+}
+
 local ActiveButtons = {
 	ToggleFlingEnabled = false,
 	VoidProtection = false,
@@ -221,6 +230,11 @@ ContentProvider:PreloadAsync(Contents, function(AssetFetchStatus)
 		
 		Animate(List, 0.7, 'Out', 'Cubic', {Position = UDim2.new(0.5, 0,0, 0)}, true)
 		SetAll(false)
+
+		for i, Frame in pairs(FramesInOrder) do
+			local FrameUIScale = Frame.UIScale
+			Animate(LoaderUIScale, 0.75, 'InOut', 'Circular', {Scale = 0}, true)
+		end
 	end
 end)
 
@@ -409,39 +423,40 @@ AntiRagdollButton.MouseButton1Down:Connect(function()
 	end
 end)
 
-AntiFlingButton.MouseButton1Down:Connect(function()
+AntiFlingButton.MouseButton1Click:Connect(function()
 	if (ActiveButtons.AntiFling == false) then
 		ActiveButtons.AntiFling = true
-		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
 		if (not Connections.AntiFling) then
 			Connections.AntiFling = RunService.Stepped:Connect(function()
-				for _, Player in pairs(game.Players:GetPlayers()) do
-					if Player ~= Player and Player.Character then
-						local Character = Player.Character
-						local Parts = Character:GetDescendants()
-
-						for _, Part in ipairs(Parts) do
-							if Part:IsA("BasePart") then
-								Part.CanCollide = false
-								Part.Velocity = Vector3.new(0, 0, 0)
-								Part.RotVelocity = Vector3.new(0, 0, 0)
-								Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-								Part.Massless = true
-							elseif Part:IsA("Accessory") and Part.Handle:IsA("BasePart") then
-								Part.Handle.CanCollide = false
-								Part.Handle.Velocity = Vector3.new(0, 0, 0)
-								Part.Handle.RotVelocity = Vector3.new(0, 0, 0)
-								Part.Handle.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-								Part.Handle.Massless = true
+				pcall(function()
+					for i,p in pairs(game.Players:GetPlayers()) do
+						task.spawn(function()
+							if (p ~= Player and p.Character) then
+								for i,v in pairs(p.Character:GetChildren()) do
+									if v:IsA("BasePart") then
+										v.CanCollide = false
+										v.Velocity = Vector3.new(0,0,0)
+										v.RotVelocity = Vector3.new(0,0,0)
+										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
+										v.Massless = true
+									elseif v:IsA("Accessory") then
+										v.Handle.CanCollide = false
+										v.Handle.Velocity = Vector3.new(0,0,0)
+										v.RotVelocity = Vector3.new(0,0,0)
+										v.CustomPhysicalProperties = PhysicalProperties.new(0,0,0,0,0)
+										v.Massless = true
+									end
+								end
 							end
-						end
+						end)
 					end
-				end
+				end)
 			end)
 		end
 	else
 		ActiveButtons.AntiFling = false
-		ReColorIcon(AntiFlingIcon, ActiveButtons.AntiFling)
+		ReColorIcon(AntiRagdollIcon, ActiveButtons.AntiRagdoll)
 		if (Connections.AntiFling) then
 			Connections.AntiFling:Disconnect()
 			Connections.AntiFling = nil
